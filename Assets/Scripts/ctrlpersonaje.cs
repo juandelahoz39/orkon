@@ -17,18 +17,19 @@ public class ctrlpersonaje : MonoBehaviour
 	Transform retroalimentacionSpawnPoint;
 
 	public AudioClip cortandoUnArbol;
-	public AudioClip ouch;
+    public AudioClip cortandoElAire;
+    public AudioClip ouch;
 	public AudioClip dying;
 
-
-	public int costoGolpeAlAire = 1;
+    public int costoTocarBombak = 25;
+    public int costoGolpeAlAire = 1;
 	public int costoGolpeAlArbol = 3;
 	public int premioArbol = 15;
 	
 
 	bool enFire1 = false;
 
-	//CtrlArbol ctrArbol = null;
+	ctrlarbol ctrArbol = null;
 	GameObject hacha = null;
 
 	public bool jumping = false;
@@ -40,7 +41,7 @@ public class ctrlpersonaje : MonoBehaviour
     {//Inicialización
 		rgb = GetComponent<Rigidbody2D>();
 		anim = GetComponent<Animator>();
-		//aSource = GetComponent<AudioSource>();
+		aSource = GetComponent<AudioSource>();
 		hacha = GameObject.Find("/orc/orc_body/orc _R_arm/orc _R_hand/orc_weapon");
 		//retroalimentacionSpawnPoint = GameObject.Find("spawnPoint").transform;
 		energy = 100;
@@ -51,8 +52,56 @@ public class ctrlpersonaje : MonoBehaviour
     
     void Update()
     {
-        
+
+        if (Mathf.Abs(Input.GetAxis("Fire1")) > 0.01f)
+        {
+            if (enFire1 == false)
+            {
+                enFire1 = true;
+                hacha.GetComponent<BoxCollider2D>().enabled = false;
+                anim.SetTrigger("attack");
+                if (ctrArbol != null){
+                    
+                    if(ctrArbol.GolpeOrco())
+                    {
+                        energy += premioArbol;
+                        if (energy > 100)
+                        {
+                            energy = 100;
+                        }
+                        else if (energy < 0)
+                        {
+
+                            energy = 0;
+                        }
+                    }else{
+
+                        energy -= costoGolpeAlArbol;
+                        aSource.PlayOneShot(cortandoUnArbol);
+                    }
+                }
+
+                else{
+
+                        energy -= costoGolpeAlAire;
+                        aSource.PlayOneShot(cortandoElAire);
+                }
+                }
+            } else
+            {
+                    enFire1 = false;
+            }
+
+               slider.value = energy;
+               txtSalud.text = energy.ToString();
+       //Fin update 
     }
+
+    public void HabilitarTriggerHacha()
+    {
+        hacha.GetComponent<BoxCollider2D>().enabled=true;
+    }
+
 
     void FixedUpdate()
     {
@@ -112,7 +161,29 @@ public class ctrlpersonaje : MonoBehaviour
             jumping = false; // por el momento... esto debe ser despu'es de terminar la animaci'on
     }
 
-   
+    public void SetControlArbol(ctrlarbol ctr)
+    {
+        ctrArbol = ctr;
+    }
 
-//fin
+    public void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.name.Equals("Bombak"))
+        {
+         if(energy > 0)
+         {
+                energy -= costoTocarBombak;
+                aSource.PlayOneShot(ouch);
+         }
+         else
+            {
+                gameObject.SetActive(false);
+            }
+            //Fin contacto bombak
+        }
+        slider.value = energy;
+        txtSalud.text = energy.ToString();
+    }
+
+    //fin
 }

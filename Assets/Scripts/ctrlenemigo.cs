@@ -28,7 +28,18 @@ public class ctrlenemigo : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (energy <= 0)
+        {
+            energy = 0;
+        }
+        slider.value = energy;
+        txt.text = energy.ToString();
+    }
+
+    private void FixedUpdate()
+    {
+        Vector2 v = new Vector2(vel, 0);
+        rgb.velocity = v;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -43,6 +54,26 @@ public class ctrlenemigo : MonoBehaviour
         s.x *= -1;
         transform.localScale = s;
     }
+
+
+    public void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.name.Equals("orc"))
+        {
+            if (energy > 0)
+            {
+                energy -= golpeDelOrco;
+            }
+            else
+            {
+                gameObject.SetActive(false);
+            }
+            //Fin contacto bombak
+        }
+        slider.value = energy;
+        txt.text = energy.ToString();
+    }
+
 
     //Fin
 }
