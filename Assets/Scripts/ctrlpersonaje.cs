@@ -43,7 +43,7 @@ public class ctrlpersonaje : MonoBehaviour
 		anim = GetComponent<Animator>();
 		aSource = GetComponent<AudioSource>();
 		hacha = GameObject.Find("/orc/orc_body/orc _R_arm/orc _R_hand/orc_weapon");
-		//retroalimentacionSpawnPoint = GameObject.Find("spawnPoint").transform;
+		retroalimentacionSpawnPoint = GameObject.Find("spawnPoint").transform;
 		energy = 100;
 		jumpForce = new Vector2(0, 0);
 		rgb.freezeRotation = true;
@@ -64,7 +64,9 @@ public class ctrlpersonaje : MonoBehaviour
                     
                     if(ctrArbol.GolpeOrco())
                     {
-                        energy += premioArbol;
+
+                        IncrementarEnergia(premioArbol);
+                        //energy += premioArbol;
                         if (energy > 100)
                         {
                             energy = 100;
@@ -76,15 +78,17 @@ public class ctrlpersonaje : MonoBehaviour
                         }
                     }else{
 
-                        energy -= costoGolpeAlArbol;
+                        //energy -= costoGolpeAlArbol;
+                        IncrementarEnergia(costoGolpeAlArbol*-1);
                         aSource.PlayOneShot(cortandoUnArbol);
                     }
                 }
 
                 else{
 
-                        energy -= costoGolpeAlAire;
-                        aSource.PlayOneShot(cortandoElAire);
+                    //energy -= costoGolpeAlAire;
+                    IncrementarEnergia(costoGolpeAlAire*-1);
+                    aSource.PlayOneShot(cortandoElAire);
                 }
                 }
             } else
@@ -105,10 +109,34 @@ public class ctrlpersonaje : MonoBehaviour
 
     void FixedUpdate()
     {
-        VerificarInputParaCaminar();
-        VerificarInputParaSaltar();
+        if(energy > 0)
+        {
+            VerificarInputParaCaminar();
+            VerificarInputParaSaltar();
+        }
+        
 
-}
+    }
+
+
+    private void IncrementarEnergia(int incremento)
+    {
+        energy += incremento;
+        InstanciarRetroalimentacionEnergia(incremento);
+    }
+
+    private void InstanciarRetroalimentacionEnergia(int incremento)
+    {
+        GameObject retroalimentcionGO = null;
+        if (retroalimentacionSpawnPoint != null)
+            retroalimentcionGO = (GameObject)Instantiate(retroalimentacionEnergiaPrefab, retroalimentacionSpawnPoint.position, retroalimentacionSpawnPoint.rotation);
+        else
+            retroalimentcionGO = (GameObject)Instantiate(retroalimentacionEnergiaPrefab, transform.position, transform.rotation);
+
+        retroalimentcionGO.GetComponent<RetroalimentacionEnergia>().cantidadCambiodeEnergia = incremento;
+    }
+
+
     private void VerificarInputParaCaminar()
     {
         float v = Input.GetAxis("Horizontal");
@@ -172,7 +200,8 @@ public class ctrlpersonaje : MonoBehaviour
         {
          if(energy > 0)
          {
-                energy -= costoTocarBombak;
+                //energy -= costoTocarBombak;
+                IncrementarEnergia(costoTocarBombak * -1);
                 aSource.PlayOneShot(ouch);
          }
          else

@@ -14,6 +14,8 @@ public class ctrlenemigo : MonoBehaviour
     public Text txt;
     public float energy = 10;
     public int golpeDelOrco = 3;
+    public GameObject retroalimentacionEnergiaPrefab;
+    Transform retroalimentacionSpawnPoint;
 
     AudioSource aSource;
     public AudioClip dying;
@@ -22,6 +24,7 @@ public class ctrlenemigo : MonoBehaviour
     {//Inicialización:
         rgb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        retroalimentacionSpawnPoint = GameObject.Find("spawnPoint").transform;
         aSource = GetComponent<AudioSource>();
     }
 
@@ -31,6 +34,7 @@ public class ctrlenemigo : MonoBehaviour
         if (energy <= 0)
         {
             energy = 0;
+            gameObject.SetActive(false);
         }
         slider.value = energy;
         txt.text = energy.ToString();
@@ -40,6 +44,23 @@ public class ctrlenemigo : MonoBehaviour
     {
         Vector2 v = new Vector2(vel, 0);
         rgb.velocity = v;
+    }
+
+    private void IncrementarEnergia(int incremento)
+    {
+        energy += incremento;
+        InstanciarRetroalimentacionEnergia(incremento);
+    }
+
+    private void InstanciarRetroalimentacionEnergia(int incremento)
+    {
+        GameObject retroalimentcionGO = null;
+        if (retroalimentacionSpawnPoint != null)
+            retroalimentcionGO = (GameObject)Instantiate(retroalimentacionEnergiaPrefab, retroalimentacionSpawnPoint.position, retroalimentacionSpawnPoint.rotation);
+        else
+            retroalimentcionGO = (GameObject)Instantiate(retroalimentacionEnergiaPrefab, transform.position, transform.rotation);
+
+        retroalimentcionGO.GetComponent<RetroalimentacionEnergia>().cantidadCambiodeEnergia = incremento;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -62,7 +83,8 @@ public class ctrlenemigo : MonoBehaviour
         {
             if (energy > 0)
             {
-                energy -= golpeDelOrco;
+                //energy -= golpeDelOrco;
+                IncrementarEnergia(golpeDelOrco * -1);
             }
             else
             {
